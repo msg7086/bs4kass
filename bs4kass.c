@@ -168,7 +168,7 @@ int main(int argc, char **argv)
     strcat(ass_filename, ".kingyubi.ass");
 
     AVDictionary *options = NULL;
-    av_dict_set(&options, "analyzeduration", "60000", 0); // 60 seconds
+    av_dict_set(&options, "analyzeduration", "60000000", 0); // 60 seconds
     av_dict_set(&options, "probesize", "1048576", 0); // 1 GiB
 
     if (avformat_open_input(&fmt_ctx, filename, NULL, NULL) < 0) {
