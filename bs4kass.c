@@ -169,7 +169,7 @@ int main(int argc, char **argv)
 
     AVDictionary *options = NULL;
     av_dict_set(&options, "analyzeduration", "60000000", 0); // 60 seconds
-    av_dict_set(&options, "probesize", "1048576", 0); // 1 GiB
+    av_dict_set(&options, "probesize", "104857600", 0); // 100 MiB
 
     if (avformat_open_input(&fmt_ctx, filename, NULL, &options) < 0) {
         fprintf(stderr, "Could not open source file %s\n", filename);
