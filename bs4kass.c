@@ -205,9 +205,31 @@ int main(int argc, char **argv)
 
     init_ass(ass_file);
     XML_Parser p = NULL;
+    int is_m2ts = -1;
+    char tmp_string[1024];
     while (av_read_frame(fmt_ctx, &pkt) >= 0) {
+        if (data_stream_idx < 2) {
+            // assuming we got the wrong track because 0 is usually video and 1 is usually audio
+            strncpy(tmp_string, pkt.data, 1023);
+            char const* pos = strstr(tmp_string, "tts");
+            if (pos) {
+                data_stream_idx = pkt.stream_index;
+                printf("[Track#] %d\n", data_stream_idx);
+            }
+            else
+                continue;
+        }
         if (pkt.stream_index == data_stream_idx)
         {
+            if (is_m2ts == -1 && pkt.size > 1) {
+                if (pkt.data[0] == '<')
+                    is_m2ts = 0;
+                else if (pkt.data[12] == '<')
+                    is_m2ts = 1;
+                else if (data_stream_idx >= 2)
+                    fprintf(stderr, "Couldn't determine if input file is m2ts or ts\n");
+            }
+
             int last = strncmp(pkt.data + pkt.size - 5, "</tt>", 5) == 0;
             last = last || (strncmp(pkt.data + pkt.size - 7, "</svg>", 6) == 0);
             if (p)
@@ -225,7 +247,7 @@ int main(int argc, char **argv)
                 XML_SetElementHandler(p, tt_start, tt_end);
                 XML_SetCharacterDataHandler(p, tt_text);
                 XML_SetUserData(p, (void*)ass_file);
-                XML_Parse(p, pkt.data + 12, pkt.size - 12, last);
+                XML_Parse(p, pkt.data + 12 * is_m2ts, pkt.size - 12 * is_m2ts, last);
             }
             if (last)
             {
